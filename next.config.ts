@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
 };
 
 const withMDX = createMDX({
-  // Add markdown plugins here, as desired
+  options: {
+    remarkPlugins: [],
+    // @ts-expect-error remark-gfm 타입 충돌 문제 해결
+    rehypePlugins: [["rehype-katex", { strict: true, throwOnError: true }]],
+  },
 });
 
 export default withMDX(nextConfig);
