@@ -5,12 +5,15 @@ import type {
   PersonUserObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 
-export const notion = new Client({
+import { NotionToMarkdown } from "notion-to-md";
+
+const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
+const n2m = new NotionToMarkdown({ notionClient: notion });
+
 function getPostMetadata(page: PageObjectResponse): Post {
-  console.log(page, "PAGE");
   const { properties } = page;
 
   const getCoverImage = (cover: PageObjectResponse["cover"]) => {
@@ -84,8 +87,11 @@ export const getPostBySlug = async (
     },
   });
 
+  const mdblocks = await n2m.pageToMarkdown(response.results[0].id);
+  const { parent } = n2m.toMarkdownString(mdblocks);
+
   return {
-    markdown: "",
+    markdown: parent,
     post: getPostMetadata(response.results[0] as PageObjectResponse),
   };
 };
