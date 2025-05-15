@@ -11,7 +11,10 @@ export default async function PostList({
   selectedTag,
   selectedSort,
 }: PostListProps) {
-  const posts = await getPublishedPosts(selectedTag, selectedSort);
+  const { posts } = await getPublishedPosts({
+    tag: selectedTag,
+    sort: selectedSort,
+  });
 
   return (
     <div className="grid grid-cols-2 gap-4">

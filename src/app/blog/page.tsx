@@ -10,11 +10,12 @@ interface BlogProps {
 
 export default async function Blog({ searchParams }: BlogProps) {
   const { tag, sort } = await searchParams;
+
   const selectedTag = tag || "전체";
   const selectedSort = sort || "latest";
 
   const [posts, tags] = await Promise.all([
-    getPublishedPosts(selectedTag, selectedSort),
+    getPublishedPosts({ tag: selectedTag, sort: selectedSort }),
     getTags(),
   ]);
 
@@ -26,7 +27,7 @@ export default async function Blog({ searchParams }: BlogProps) {
         </aside>
         <div className="space-y-8">
           <HeaderSection selectedTag={selectedTag} />
-          <PostList posts={posts} />
+          <PostList posts={posts.posts} />
         </div>
         <aside>
           <TagSection tags={tags} selectedTag={selectedTag} />
