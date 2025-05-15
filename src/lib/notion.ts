@@ -13,23 +13,23 @@ const notion = new Client({
 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
-const DEFAULT_COVER_IMAGE = "/images/panda.jpeg";
+// const DEFAULT_COVER_IMAGE = "/images/panda.jpeg";
 
 function getPostMetadata(page: PageObjectResponse): Post {
   const { properties } = page;
 
-  const getCoverImage = (cover: PageObjectResponse["cover"]) => {
-    if (!cover) return DEFAULT_COVER_IMAGE;
+  // const getCoverImage = (cover: PageObjectResponse["cover"]) => {
+  //   if (!cover) return DEFAULT_COVER_IMAGE;
 
-    switch (cover.type) {
-      case "external":
-        return cover.external.url;
-      case "file":
-        return cover.file.url;
-      default:
-        return DEFAULT_COVER_IMAGE;
-    }
-  };
+  //   switch (cover.type) {
+  //     case "external":
+  //       return cover.external.url;
+  //     case "file":
+  //       return cover.file.url;
+  //     default:
+  //       return DEFAULT_COVER_IMAGE;
+  //   }
+  // };
 
   return {
     id: page.id,
@@ -41,7 +41,7 @@ function getPostMetadata(page: PageObjectResponse): Post {
       properties.Description.type === "rich_text"
         ? (properties.Description.rich_text[0]?.plain_text ?? "")
         : "",
-    coverImage: getCoverImage(page.cover),
+    // coverImage: getCoverImage(page.cover),
     tags:
       properties.Tags.type === "multi_select"
         ? properties.Tags.multi_select.map((tag) => tag.name)
@@ -97,11 +97,25 @@ export const getPostBySlug = async (
     post: getPostMetadata(response.results[0] as PageObjectResponse),
   };
 };
+interface getPublishedPostParams {
+  tag?: string;
+  sort?: string;
+  pageSize?: number;
+  startCursor?: string;
+}
 
-export const getPublishedPosts = async (
-  tag?: string,
-  sort?: string,
-): Promise<Post[]> => {
+interface getPublishedPostsResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+export const getPublishedPosts = async ({
+  tag,
+  sort,
+  pageSize = 2,
+  startCursor,
+}: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
@@ -130,15 +144,23 @@ export const getPublishedPosts = async (
         direction: sort === "latest" ? "descending" : "ascending",
       },
     ],
+    page_size: pageSize,
+    start_cursor: startCursor,
   });
 
-  return response.results
+  const posts = response.results
     .filter((page): page is PageObjectResponse => "properties" in page)
     .map(getPostMetadata);
+
+  return {
+    posts,
+    nextCursor: response.next_cursor,
+    hasMore: response.has_more,
+  };
 };
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
-  const posts = await getPublishedPosts();
+  const { posts } = await getPublishedPosts();
 
   // 모든 태그를 추출하고 각 태그의 출현 횟수를 계산
   const tagCount = posts.reduce(
