@@ -1,9 +1,36 @@
-export default function Blog() {
+import { getPublishedPosts, getTags } from "@/lib/notion";
+import ProfileSection from "../_components/ProfileSection";
+import HeaderSection from "../_components/HeaderSection";
+import PostList from "@/components/features/blog/PostList";
+import TagSection from "../_components/TagSection";
+
+interface BlogProps {
+  searchParams: Promise<{ tag?: string; sort?: string }>;
+}
+
+export default async function Blog({ searchParams }: BlogProps) {
+  const { tag, sort } = await searchParams;
+  const selectedTag = tag || "전체";
+  const selectedSort = sort || "latest";
+
+  const [posts, tags] = await Promise.all([
+    getPublishedPosts(selectedTag, selectedSort),
+    getTags(),
+  ]);
+
   return (
     <div className="container py-8">
-      <div className="space-y-8">
-        {/* 섹션 제목 */}
-        <h2 className="text-3xl font-bold tracking-tight">블로그 목록</h2>
+      <div className="grid grid-cols-[220px_1fr_200px] gap-6">
+        <aside>
+          <ProfileSection />
+        </aside>
+        <div className="space-y-8">
+          <HeaderSection selectedTag={selectedTag} />
+          <PostList posts={posts} />
+        </div>
+        <aside>
+          <TagSection tags={tags} selectedTag={selectedTag} />
+        </aside>
       </div>
     </div>
   );

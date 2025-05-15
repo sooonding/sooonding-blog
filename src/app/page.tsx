@@ -1,28 +1,24 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/common/components/ui/select";
-import { PostCard } from "@/components/PostCard";
-import Link from "next/link";
 import ProfileSection from "./_components/ProfileSection";
-import TagSection from "./_components/TagSection";
-import { getPublishedPosts, getTags } from "@/lib/notion";
+
+import HeaderSection from "./_components/HeaderSection";
+import PostListSuspense from "@/components/features/blog/PostListSuspense";
+import { getTags } from "@/lib/notion";
+import { Suspense } from "react";
+import TagSectionClient from "./_components/TagSectionClient";
+import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
+import TagSectionSkeleton from "./_components/TagSectionSkeleton";
 
 interface HomeProps {
-  searchParams: Promise<{ tag?: string }>;
+  searchParams: Promise<{ tag?: string; sort?: string }>;
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { tag } = await searchParams;
-  const selectedTag = tag || "전체";
+  const { tag, sort } = await searchParams;
 
-  const [posts, tags] = await Promise.all([
-    getPublishedPosts(selectedTag),
-    getTags(),
-  ]);
+  const selectedTag = tag || "전체";
+  const selectedSort = sort || "latest";
+
+  const tags = getTags();
 
   return (
     <div className="container py-8">
@@ -33,32 +29,19 @@ export default async function Home({ searchParams }: HomeProps) {
           <ProfileSection />
         </aside>
         <div className="space-y-8">
-          {/* 섹션 제목 */}
-          <div className="flex items-center justify-between">
-            {selectedTag === "전체" ? "블로그 목록" : `${selectedTag} 관련 글`}
-            <Select defaultValue="latest">
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="정렬 방식 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="latest">최신순</SelectItem>
-                <SelectItem value="oldest">오래된순</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* 블로그 카드 그리드 */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* 블로그 카드 반복 */}
-            {posts.map((post) => (
-              <Link href={`/blog/${post.slug}`} key={post.id}>
-                <PostCard post={post} />
-              </Link>
-            ))}
-          </div>
+          <HeaderSection selectedTag={selectedTag} />
+          <Suspense fallback={<PostListSkeleton />}>
+            <PostListSuspense
+              selectedTag={selectedTag}
+              selectedSort={selectedSort}
+            />
+          </Suspense>
         </div>
         {/* 우측 사이드바  */}
         <aside>
-          <TagSection tags={tags} selectedTag={selectedTag} />
+          <Suspense fallback={<TagSectionSkeleton />}>
+            <TagSectionClient tags={tags} selectedTag={selectedTag} />
+          </Suspense>
         </aside>
       </div>
     </div>
