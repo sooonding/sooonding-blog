@@ -3,7 +3,7 @@
 import { getPublishedPostsResponse } from "@/lib/notion";
 import Link from "next/link";
 import { PostCard } from "./PostCard";
-import { Button } from "@/common/components/ui/button";
+// import { Button } from "@/common/components/ui/button";
 import { use, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
