@@ -97,22 +97,22 @@ export const getPostBySlug = async (
     post: getPostMetadata(response.results[0] as PageObjectResponse),
   };
 };
-interface getPublishedPostParams {
+export interface getPublishedPostParams {
   tag?: string;
   sort?: string;
   pageSize?: number;
   startCursor?: string;
 }
 
-interface getPublishedPostsResponse {
+export interface getPublishedPostsResponse {
   posts: Post[];
   nextCursor: string | null;
   hasMore: boolean;
 }
 
 export const getPublishedPosts = async ({
-  tag,
-  sort,
+  tag = "전체",
+  sort = "latest",
   pageSize = 2,
   startCursor,
 }: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
@@ -160,7 +160,7 @@ export const getPublishedPosts = async ({
 };
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
-  const { posts } = await getPublishedPosts();
+  const { posts } = await getPublishedPosts({ pageSize: 100 });
 
   // 모든 태그를 추출하고 각 태그의 출현 횟수를 계산
   const tagCount = posts.reduce(
