@@ -51,7 +51,6 @@ export default function PostList({ postsPromise }: PostListProps) {
       queryFn: fetchPosts, // 실제 데이터를 불러오는 비동기 함수
       initialPageParam: undefined, // 첫 페이지는 특별한 파라미터 없이 시작
       getNextPageParam: (lastPage) => {
-        console.log("lastPage", lastPage);
         //다음 페이지를 불러올 때 사용할 파라미터를 반환하는 함수입니다.
         return lastPage.nextCursor ?? undefined;
       },
@@ -71,7 +70,6 @@ export default function PostList({ postsPromise }: PostListProps) {
   const { ref, inView } = useInView({ threshold: 0.5 });
 
   useEffect(() => {
-    console.log("inView", inView);
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }

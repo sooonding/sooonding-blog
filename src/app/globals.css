@@ -130,3 +130,25 @@
   @apply mx-auto max-w-6xl px-4;
   width: 100%;
 }
+
+/* NOTE: mdx에서 백틱이 그대로 나오는 문제 해결 */
+@layer utilities {
+  .prose code::before,
+  .prose code::after {
+    content: none;
+  }
+
+  .prose p code {
+    background-color: theme("colors.zinc.100"); /* 또는 직접 rgba 값 */
+    color: theme("colors.red.600"); /* 원하는 글자색 */
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    font-size: 0.875em;
+  }
+
+  .dark .prose p code {
+    background-color: theme("colors.zinc.800");
+    color: theme("colors.red.400");
+  }
+}
