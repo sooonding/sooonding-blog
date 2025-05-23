@@ -3,6 +3,8 @@ import ProfileSection from "../_components/ProfileSection";
 import HeaderSection from "../_components/HeaderSection";
 import PostList from "@/components/features/blog/PostList";
 import TagSection from "../_components/TagSection";
+import { Suspense } from "react";
+import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
 
 interface BlogProps {
   searchParams: Promise<{ tag?: string; sort?: string }>;
@@ -27,7 +29,9 @@ export default async function Blog({ searchParams }: BlogProps) {
         </aside>
         <div className="space-y-8">
           <HeaderSection selectedTag={selectedTag} />
-          <PostList posts={posts.posts} />
+          <Suspense fallback={<PostListSkeleton />}>
+            <PostList posts={posts.posts} />
+          </Suspense>
         </div>
         <aside>
           <TagSection tags={tags} selectedTag={selectedTag} />

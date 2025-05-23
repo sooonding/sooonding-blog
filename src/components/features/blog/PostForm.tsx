@@ -6,12 +6,14 @@ import { Card, CardContent } from "@/common/components/ui/card";
 import { Input } from "@/common/components/ui/input";
 import { Label } from "@/common/components/ui/label";
 import { Textarea } from "@/common/components/ui/textarea";
-import { createPostAction } from "@/app/actions/blog";
+import { createPostAction } from "@/app/_actions/blog";
 import { Loader2 } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export default function PostForm() {
-  const [state, formAction, isPending] = useActionState(createPostAction, {
+  const initialState = {
     message: "",
     errors: {},
     formData: {
@@ -19,7 +21,24 @@ export default function PostForm() {
       tag: "",
       content: "",
     },
-  });
+  };
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  // 폼 액션의 결과 기반으로 state를 업데이트 하는 Hook
+  const [state, formAction, isPending] = useActionState(
+    createPostAction,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (state.success) {
+      //invalidateQueries : 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      router.push("/");
+    }
+  }, [state, router, queryClient]);
 
   return (
     <form action={formAction}>

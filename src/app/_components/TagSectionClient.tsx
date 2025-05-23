@@ -25,7 +25,7 @@ export default function TagSection({ tags, selectedTag }: TagSectionProps) {
         <CardTitle>태그 목록</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-3">
+        <div className="flex max-h-[160px] flex-col gap-3 overflow-y-auto md:max-h-full">
           {allTags.map((tag) => (
             <Link href={`?tag=${tag.name}`} key={tag.name}>
               <div

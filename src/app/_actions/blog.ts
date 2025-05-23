@@ -2,8 +2,8 @@
 
 import { createPost } from "@/lib/notion";
 import { z } from "zod";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+
+import { revalidateTag } from "next/cache";
 // 스키마 정의
 const postSchema = z.object({
   title: z.string().min(1, { message: "제목을 입력해주세요" }),
@@ -27,6 +27,7 @@ export interface PostFormState {
     content?: string[];
   };
   formData?: PostFormData;
+  success?: boolean;
 }
 
 export async function createPostAction(
@@ -57,6 +58,13 @@ export async function createPostAction(
   try {
     const { title, tag, content } = validatedFields.data;
     await createPost({ title, tag, content });
+
+    revalidateTag("posts");
+
+    return {
+      message: "블로그 포스트 생성에 성공했습니다.",
+      success: true,
+    };
   } catch (error) {
     console.error(error);
     return {
@@ -64,8 +72,7 @@ export async function createPostAction(
       formData: rawFormData,
     };
   }
-  revalidatePath("/");
-  redirect("/");
+  // revalidatePath("/");
 
   // const { title, tag, content } = Object.fromEntries(formData);
   // await createPost({

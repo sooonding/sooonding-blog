@@ -28,19 +28,19 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <div className="container py-8">
       {/* 레이아웃 그리드 cols : [220px 고정, 나머지 사이즈 다, 200px 고정] */}
-      <div className="grid grid-cols-[220px_1fr_200px] gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr_200px]">
         {/* 좌측 사이드 바 */}
-        <aside>
+        <aside className="order-1 md:order-none">
           <ProfileSection />
         </aside>
-        <div className="space-y-8">
+        <div className="order-3 space-y-8 md:order-none">
           <HeaderSection selectedTag={selectedTag} />
           <Suspense fallback={<PostListSkeleton />}>
             <PostListSuspense postsPromise={postsPromise} />
           </Suspense>
         </div>
         {/* 우측 사이드바  */}
-        <aside>
+        <aside className="order-2 md:order-none">
           <Suspense fallback={<TagSectionSkeleton />}>
             <TagSectionClient tags={tags} selectedTag={selectedTag} />
           </Suspense>
