@@ -3,6 +3,8 @@ import ProfileSection from "../_components/ProfileSection";
 import HeaderSection from "../_components/HeaderSection";
 import PostList from "@/components/features/blog/PostList";
 import TagSection from "../_components/TagSection";
+import { Suspense } from "react";
+import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
 
 interface BlogProps {
   searchParams: Promise<{ tag?: string; sort?: string }>;
@@ -10,11 +12,12 @@ interface BlogProps {
 
 export default async function Blog({ searchParams }: BlogProps) {
   const { tag, sort } = await searchParams;
+
   const selectedTag = tag || "전체";
   const selectedSort = sort || "latest";
 
   const [posts, tags] = await Promise.all([
-    getPublishedPosts(selectedTag, selectedSort),
+    getPublishedPosts({ tag: selectedTag, sort: selectedSort }),
     getTags(),
   ]);
 
@@ -26,7 +29,9 @@ export default async function Blog({ searchParams }: BlogProps) {
         </aside>
         <div className="space-y-8">
           <HeaderSection selectedTag={selectedTag} />
-          <PostList posts={posts} />
+          <Suspense fallback={<PostListSkeleton />}>
+            <PostList posts={posts.posts} />
+          </Suspense>
         </div>
         <aside>
           <TagSection tags={tags} selectedTag={selectedTag} />

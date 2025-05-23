@@ -2,7 +2,7 @@ import ProfileSection from "./_components/ProfileSection";
 
 import HeaderSection from "./_components/HeaderSection";
 import PostListSuspense from "@/components/features/blog/PostListSuspense";
-import { getTags } from "@/lib/notion";
+import { getPublishedPosts, getTags } from "@/lib/notion";
 import { Suspense } from "react";
 import TagSectionClient from "./_components/TagSectionClient";
 import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
@@ -20,25 +20,27 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const tags = getTags();
 
+  const postsPromise = getPublishedPosts({
+    tag: selectedTag,
+    sort: selectedSort,
+  });
+
   return (
     <div className="container py-8">
       {/* 레이아웃 그리드 cols : [220px 고정, 나머지 사이즈 다, 200px 고정] */}
-      <div className="grid grid-cols-[220px_1fr_200px] gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr_200px]">
         {/* 좌측 사이드 바 */}
-        <aside>
+        <aside className="order-1 md:order-none">
           <ProfileSection />
         </aside>
-        <div className="space-y-8">
+        <div className="order-3 space-y-8 md:order-none">
           <HeaderSection selectedTag={selectedTag} />
           <Suspense fallback={<PostListSkeleton />}>
-            <PostListSuspense
-              selectedTag={selectedTag}
-              selectedSort={selectedSort}
-            />
+            <PostListSuspense postsPromise={postsPromise} />
           </Suspense>
         </div>
         {/* 우측 사이드바  */}
-        <aside>
+        <aside className="order-2 md:order-none">
           <Suspense fallback={<TagSectionSkeleton />}>
             <TagSectionClient tags={tags} selectedTag={selectedTag} />
           </Suspense>

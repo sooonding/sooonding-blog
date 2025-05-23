@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Button } from "../components/ui/button";
+import { ModeToggle } from "../components/theme/DarkModeToggle";
 
 export default function Header() {
   return (
@@ -18,6 +20,14 @@ export default function Header() {
             소개
           </Link>
         </nav>
+        <div className="ml-2.5 flex items-center gap-1">
+          <ModeToggle />
+          {/* asChild는 말 그대로 자식요소를 쓰겠다는 말
+          실제 브라우저에서 보면 button 엘리먼트는 없어진다. */}
+          <Button asChild size="sm" variant="outline">
+            <Link href="/blog/write">글쓰기</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

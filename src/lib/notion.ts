@@ -6,6 +6,7 @@ import type {
 } from "@notionhq/client/build/src/api-endpoints";
 
 import { NotionToMarkdown } from "notion-to-md";
+import { unstable_cache } from "next/cache";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -13,23 +14,23 @@ const notion = new Client({
 
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
-const DEFAULT_COVER_IMAGE = "/images/panda.jpeg";
+// const DEFAULT_COVER_IMAGE = "/images/panda.jpeg";
 
 function getPostMetadata(page: PageObjectResponse): Post {
   const { properties } = page;
 
-  const getCoverImage = (cover: PageObjectResponse["cover"]) => {
-    if (!cover) return DEFAULT_COVER_IMAGE;
+  // const getCoverImage = (cover: PageObjectResponse["cover"]) => {
+  //   if (!cover) return DEFAULT_COVER_IMAGE;
 
-    switch (cover.type) {
-      case "external":
-        return cover.external.url;
-      case "file":
-        return cover.file.url;
-      default:
-        return DEFAULT_COVER_IMAGE;
-    }
-  };
+  //   switch (cover.type) {
+  //     case "external":
+  //       return cover.external.url;
+  //     case "file":
+  //       return cover.file.url;
+  //     default:
+  //       return DEFAULT_COVER_IMAGE;
+  //   }
+  // };
 
   return {
     id: page.id,
@@ -41,7 +42,7 @@ function getPostMetadata(page: PageObjectResponse): Post {
       properties.Description.type === "rich_text"
         ? (properties.Description.rich_text[0]?.plain_text ?? "")
         : "",
-    coverImage: getCoverImage(page.cover),
+    // coverImage: getCoverImage(page.cover),
     tags:
       properties.Tags.type === "multi_select"
         ? properties.Tags.multi_select.map((tag) => tag.name)
@@ -90,6 +91,7 @@ export const getPostBySlug = async (
   });
 
   const mdblocks = await n2m.pageToMarkdown(response.results[0].id);
+
   const { parent } = n2m.toMarkdownString(mdblocks);
 
   return {
@@ -97,48 +99,76 @@ export const getPostBySlug = async (
     post: getPostMetadata(response.results[0] as PageObjectResponse),
   };
 };
+export interface getPublishedPostParams {
+  tag?: string;
+  sort?: string;
+  pageSize?: number;
+  startCursor?: string;
+}
 
-export const getPublishedPosts = async (
-  tag?: string,
-  sort?: string,
-): Promise<Post[]> => {
-  const response = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
-    filter: {
-      and: [
-        {
-          property: "Status",
-          select: {
-            equals: "Published",
+export interface getPublishedPostsResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+export const getPublishedPosts = unstable_cache(
+  async ({
+    tag = "전체",
+    sort = "latest",
+    pageSize = 4,
+    startCursor,
+  }: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_DATABASE_ID!,
+      filter: {
+        and: [
+          {
+            property: "Status",
+            select: {
+              equals: "Published",
+            },
           },
-        },
-        ...(tag && tag !== "전체"
-          ? [
-              {
-                property: "Tags",
-                multi_select: {
-                  contains: tag,
+          ...(tag && tag !== "전체"
+            ? [
+                {
+                  property: "Tags",
+                  multi_select: {
+                    contains: tag,
+                  },
                 },
-              },
-            ]
-          : []),
-      ],
-    },
-    sorts: [
-      {
-        property: "Date",
-        direction: sort === "latest" ? "descending" : "ascending",
+              ]
+            : []),
+        ],
       },
-    ],
-  });
+      sorts: [
+        {
+          property: "Date",
+          direction: sort === "latest" ? "descending" : "ascending",
+        },
+      ],
+      page_size: pageSize,
+      start_cursor: startCursor,
+    });
 
-  return response.results
-    .filter((page): page is PageObjectResponse => "properties" in page)
-    .map(getPostMetadata);
-};
+    const posts = response.results
+      .filter((page): page is PageObjectResponse => "properties" in page)
+      .map(getPostMetadata);
+
+    return {
+      posts,
+      nextCursor: response.next_cursor,
+      hasMore: response.has_more,
+    };
+  },
+  ["posts"],
+  {
+    tags: ["posts"],
+  },
+);
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
-  const posts = await getPublishedPosts();
+  const { posts } = await getPublishedPosts({ pageSize: 100 });
 
   // 모든 태그를 추출하고 각 태그의 출현 횟수를 계산
   const tagCount = posts.reduce(
@@ -172,4 +202,53 @@ export const getTags = async (): Promise<TagFilterItem[]> => {
   const sortedTags = restTags.sort((a, b) => a.name.localeCompare(b.name));
 
   return [allTag, ...sortedTags];
+};
+
+export interface CreatePostParams {
+  title: string;
+  tag: string;
+  content: string;
+}
+
+export const createPost = async ({ title, tag, content }: CreatePostParams) => {
+  const response = await notion.pages.create({
+    parent: {
+      database_id: process.env.NOTION_DATABASE_ID!,
+    },
+    properties: {
+      Title: {
+        title: [
+          {
+            text: {
+              content: title,
+            },
+          },
+        ],
+      },
+      Description: {
+        rich_text: [
+          {
+            text: {
+              content: content,
+            },
+          },
+        ],
+      },
+      Tags: {
+        multi_select: [{ name: tag }],
+      },
+      Status: {
+        select: {
+          name: "Published",
+        },
+      },
+      Date: {
+        date: {
+          start: new Date().toISOString(),
+        },
+      },
+    },
+  });
+
+  return response;
 };

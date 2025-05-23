@@ -1,25 +1,112 @@
-import { getPublishedPosts } from "@/lib/notion";
+"use client";
+
+import { getPublishedPostsResponse } from "@/lib/notion";
 import Link from "next/link";
 import { PostCard } from "./PostCard";
+// import { Button } from "@/common/components/ui/button";
+import { use, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInView } from "react-intersection-observer";
+import { Loader2 } from "lucide-react";
 
 interface PostListProps {
-  selectedTag: string;
-  selectedSort: string;
+  postsPromise: Promise<getPublishedPostsResponse>;
 }
 
-export default async function PostList({
-  selectedTag,
-  selectedSort,
-}: PostListProps) {
-  const posts = await getPublishedPosts(selectedTag, selectedSort);
+export default function PostList({ postsPromise }: PostListProps) {
+  // useHook을 이용하여 client 컴포넌트에서 data 받아오기
+  // use: 서버컴포넌트에서 await으로 데이터를 가져오는것 처럼 client 컴포넌트에서 use를 통해 Promise를 처리 할 수 있음
+
+  const initialData = use(postsPromise);
+
+  const searchParams = useSearchParams();
+  const tag = searchParams.get("tag");
+  const sort = searchParams.get("sort");
+
+  // react-intersection-observer 라이브러리를 사용하여 무한 스크롤 구현
+
+  const fetchPosts = async ({
+    pageParam,
+  }: {
+    pageParam: string | undefined;
+  }) => {
+    const params = new URLSearchParams();
+    if (tag) params.set("tag", tag);
+    if (sort) params.set("sort", sort);
+    if (pageParam) params.set("startCursor", pageParam);
+
+    const response = await fetch(`/api/posts?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    return response.json();
+  };
+
+  //isFetchingNextPage : 다음 페이지 불러오는 중인지 여부 | 로딩 스피너 등 표시할 때 사용
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["posts", tag, sort],
+      queryFn: fetchPosts, // 실제 데이터를 불러오는 비동기 함수
+      initialPageParam: undefined, // 첫 페이지는 특별한 파라미터 없이 시작
+      getNextPageParam: (lastPage) => {
+        //다음 페이지를 불러올 때 사용할 파라미터를 반환하는 함수입니다.
+        return lastPage.nextCursor ?? undefined;
+      },
+      initialData: {
+        pages: [initialData], //첫 렌더링 시 사용할 초기 데이터입니다.
+        pageParams: [undefined], //첫 렌더링 시 사용할 파라미터입니다.
+      },
+    });
+
+  // const handleLoadMore = () => {
+  //   if (hasNextPage && !isFetchingNextPage) {
+  //     fetchNextPage();
+  //   }
+  // };
+
+  // useInView 훅은 뷰포트 감지
+  const { ref, inView } = useInView({ threshold: 0.5 });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
+
+  const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      {posts.map((post, index) => (
-        <Link href={`/blog/${post.slug}`} key={post.id}>
-          <PostCard post={post} isFirst={index === 0} />
-        </Link>
-      ))}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {allPosts.map((post, index) => {
+          return (
+            <Link href={`/blog/${post.slug}`} key={post.id}>
+              <PostCard post={post} isFirst={index === 0} />
+            </Link>
+          );
+        })}
+      </div>
+      {hasNextPage && !isFetchingNextPage && (
+        <div ref={ref} className="h-10"></div>
+      )}
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center gap-2 py-4">
+          <Loader2 className="text-muted-foreground h-5 w-5 animate-spin" />
+          <span className="text-muted-foreground text-sm">loading...</span>
+        </div>
+      )}
+      {/* {hasNextPage && (
+        <Button
+          onClick={handleLoadMore}
+          variant="outline"
+          size="lg"
+          className="text-secondary-foreground w-full"
+        >
+          {isFetchingNextPage ? "로딩중..." : "더보기"}
+        </Button>
+      )} */}
     </div>
   );
 }
