@@ -1,10 +1,14 @@
 import { getPublishedPosts, getTags } from "@/lib/notion";
 import ProfileSection from "../_components/ProfileSection";
 import HeaderSection from "../_components/HeaderSection";
-import PostList from "@/components/features/blog/PostList";
-import TagSection from "../_components/TagSection";
+
 import { Suspense } from "react";
 import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
+
+import TagSectionClient from "../_components/TagSectionClient";
+import TagSectionSkeleton from "../_components/TagSectionSkeleton";
+
+import PostList from "@/components/features/blog/PostListSuspense";
 
 interface BlogProps {
   searchParams: Promise<{ tag?: string; sort?: string }>;
@@ -16,10 +20,12 @@ export default async function Blog({ searchParams }: BlogProps) {
   const selectedTag = tag || "전체";
   const selectedSort = sort || "latest";
 
-  const [posts, tags] = await Promise.all([
-    getPublishedPosts({ tag: selectedTag, sort: selectedSort }),
-    getTags(),
-  ]);
+  const tags = getTags();
+
+  const postsPromise = getPublishedPosts({
+    tag: selectedTag,
+    sort: selectedSort,
+  });
 
   return (
     <div className="container py-8">
@@ -30,11 +36,13 @@ export default async function Blog({ searchParams }: BlogProps) {
         <div className="space-y-8">
           <HeaderSection selectedTag={selectedTag} />
           <Suspense fallback={<PostListSkeleton />}>
-            <PostList posts={posts.posts} />
+            <PostList postsPromise={postsPromise} />
           </Suspense>
         </div>
         <aside>
-          <TagSection tags={tags} selectedTag={selectedTag} />
+          <Suspense fallback={<TagSectionSkeleton />}>
+            <TagSectionClient tags={tags} selectedTag={selectedTag} />
+          </Suspense>
         </aside>
       </div>
     </div>

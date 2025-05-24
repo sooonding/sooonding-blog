@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/common/components/ui/card";
 import Image from "next/image";
-import { Button } from "@/common/components/ui/button";
-import { Github, Instagram } from "lucide-react";
+import { Github, Instagram, Mail } from "lucide-react";
+import Link from "next/link";
 
 const socialLinks = [
   {
@@ -11,6 +11,10 @@ const socialLinks = [
   {
     icon: Instagram,
     href: "https://www.instagram.com/sooonding",
+  },
+  {
+    icon: Mail,
+    href: "mailto:sooonding@gmail.com",
   },
 ];
 
@@ -41,19 +45,25 @@ export default function ProfileSection() {
             </p>
           </div>
 
-          <div className="flex justify-center gap-2">
+          <div className="flex items-center gap-1">
+            <p className="text-muted-foreground text-xs font-bold">
+              Find me on
+            </p>
             {socialLinks.map((item, index) => (
-              <Button
+              <Link
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-1"
                 key={index}
-                variant="ghost"
-                className="bg-primary/10"
-                size="icon"
-                asChild
               >
-                <a href={item.href} target="_blank" rel="noopener noreferrer">
-                  <item.icon className="h-4 w-4" />
-                </a>
-              </Button>
+                {item.href.includes("mail") && (
+                  <span className="text-muted-foreground text-xs font-bold">
+                    and
+                  </span>
+                )}
+                <item.icon className="h-4 w-4 transition-all hover:text-indigo-600" />
+              </Link>
             ))}
           </div>
 

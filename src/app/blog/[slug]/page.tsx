@@ -16,6 +16,7 @@ import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 
 import GiscusComments from "@/components/GiscusComments";
+import { notFound } from "next/navigation";
 
 interface TocEntry {
   value: string;
@@ -57,13 +58,17 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
   const { markdown, post } = await getPostBySlug(slug);
 
+  if (!post) {
+    return notFound();
+  }
+
   const { data } = await compile(markdown, {
     rehypePlugins: [withSlugs, withToc, withTocExport, rehypeSanitize],
   });
 
   return (
     <article className="container py-4 md:py-8 lg:py-12">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr_240px] md:gap-8">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[130px_1fr_250px] md:gap-8">
         <aside className="hidden md:block"></aside>
         <section className="order-2 md:order-none">
           {/* 블로그 헤더 */}

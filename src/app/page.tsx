@@ -1,12 +1,13 @@
 import ProfileSection from "./_components/ProfileSection";
 
 import HeaderSection from "./_components/HeaderSection";
-import PostListSuspense from "@/components/features/blog/PostListSuspense";
+
 import { getPublishedPosts, getTags } from "@/lib/notion";
 import { Suspense } from "react";
 import TagSectionClient from "./_components/TagSectionClient";
 import PostListSkeleton from "@/components/features/blog/PostListSkeleton";
 import TagSectionSkeleton from "./_components/TagSectionSkeleton";
+import MainPostList from "@/components/features/blog/MainPostListSuspense";
 
 interface HomeProps {
   searchParams: Promise<{ tag?: string; sort?: string }>;
@@ -35,9 +36,11 @@ export default async function Home({ searchParams }: HomeProps) {
         </aside>
         <div className="order-3 space-y-8 md:order-none">
           <HeaderSection selectedTag={selectedTag} />
-          <Suspense fallback={<PostListSkeleton />}>
-            <PostListSuspense postsPromise={postsPromise} />
-          </Suspense>
+          <div className="mt-20">
+            <Suspense fallback={<PostListSkeleton />}>
+              <MainPostList postsPromise={postsPromise} />
+            </Suspense>
+          </div>
         </div>
         {/* 우측 사이드바  */}
         <aside className="order-2 md:order-none">
