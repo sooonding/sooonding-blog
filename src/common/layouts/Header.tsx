@@ -7,7 +7,7 @@ export default function Header() {
     <header className="bg-background sticky top-0 z-50 border-b">
       <div className="container flex h-[var(--header-height)] items-center">
         <Link href="/" className="text-primary text-lg font-semibold">
-          <span className="font-bold">간헐적 기록을 합니다</span>
+          <span className="font-bold">간헐적으로 기록합니다.</span>
         </Link>
         <nav className="ml-auto flex items-center gap-4">
           <Link href="/" className="hover:text-primary font-medium">
