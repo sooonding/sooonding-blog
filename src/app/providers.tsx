@@ -27,6 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         {children}
+
         {/* devTools 적용 */}
         <ReactQueryDevtools initialIsOpen={false} />
       </ThemeProvider>

@@ -2,23 +2,21 @@
 
 import { getPublishedPostsResponse } from "@/lib/notion";
 import Link from "next/link";
-import { PostCard } from "./PostCard";
+
 // import { Button } from "@/common/components/ui/button";
 import { use, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { Loader2 } from "lucide-react";
+import { MainCard } from "./MainCard";
 import { motion } from "framer-motion";
 
 interface PostListProps {
   postsPromise: Promise<getPublishedPostsResponse>;
 }
 
-export default function PostList({ postsPromise }: PostListProps) {
-  // useHook을 이용하여 client 컴포넌트에서 data 받아오기
-  // use: 서버컴포넌트에서 await으로 데이터를 가져오는것 처럼 client 컴포넌트에서 use를 통해 Promise를 처리 할 수 있음
-
+export default function MainPostList({ postsPromise }: PostListProps) {
   const initialData = use(postsPromise);
 
   const searchParams = useSearchParams();
@@ -61,12 +59,6 @@ export default function PostList({ postsPromise }: PostListProps) {
       },
     });
 
-  // const handleLoadMore = () => {
-  //   if (hasNextPage && !isFetchingNextPage) {
-  //     fetchNextPage();
-  //   }
-  // };
-
   // useInView 훅은 뷰포트 감지
   const { ref, inView } = useInView({ threshold: 0.5 });
 
@@ -90,11 +82,11 @@ export default function PostList({ postsPromise }: PostListProps) {
       }}
     >
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
           {allPosts.map((post, index) => {
             return (
               <Link href={`/blog/${post.slug}`} key={post.id}>
-                <PostCard post={post} isFirst={index === 0} />
+                <MainCard post={post} isFirst={index === 0} />
               </Link>
             );
           })}
@@ -108,16 +100,6 @@ export default function PostList({ postsPromise }: PostListProps) {
             <span className="text-muted-foreground text-sm">loading...</span>
           </div>
         )}
-        {/* {hasNextPage && (
-        <Button
-          onClick={handleLoadMore}
-          variant="outline"
-          size="lg"
-          className="text-secondary-foreground w-full"
-        >
-          {isFetchingNextPage ? "로딩중..." : "더보기"}
-        </Button>
-      )} */}
       </div>
     </motion.main>
   );
