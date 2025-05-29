@@ -57,6 +57,8 @@ export default function MainPostList({ postsPromise }: PostListProps) {
         pages: [initialData], //첫 렌더링 시 사용할 초기 데이터입니다.
         pageParams: [undefined], //첫 렌더링 시 사용할 파라미터입니다.
       },
+      refetchOnMount: true, // 컴포넌트가 마운트될 때마다 새로운 데이터를 가져오도록
+      refetchOnWindowFocus: true, // 윈도우가 포커스될 때마다 새로운 데이터를 가져오도록
     });
 
   // useInView 훅은 뷰포트 감지
@@ -69,6 +71,8 @@ export default function MainPostList({ postsPromise }: PostListProps) {
   }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
 
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
+
+  console.log(allPosts, "all");
 
   return (
     <motion.main
