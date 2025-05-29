@@ -37,7 +37,7 @@ export default function AboutCard(props: ISkill) {
             </li>
           ) : (
             <div key={index} className="mb-2">
-              <p className="text-gray-500">{item.title}</p>
+              <li className="text-gray-500"> {item.title}</li>
               <ul className="mt-2 ml-4">
                 {item.subItems.map((subItem, subIndex) => (
                   <li key={subIndex} className="text-gray-500">
