@@ -9,7 +9,6 @@ interface IMainCardProps {
 }
 
 export function MainCard({ post }: IMainCardProps) {
-  console.log(post);
   return (
     <div className="container">
       <div className="flex flex-col items-start gap-2 md:flex-row md:items-center md:gap-10">
