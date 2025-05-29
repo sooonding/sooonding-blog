@@ -70,8 +70,6 @@ export default function MainPostList({ postsPromise }: PostListProps) {
 
   const allPosts = data?.pages.flatMap((page) => page.posts) ?? [];
 
-  console.log(allPosts, "all");
-
   return (
     <motion.main
       key={searchParams.toString()}
