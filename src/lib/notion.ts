@@ -70,6 +70,9 @@ export const getPostBySlug = async (
   markdown: string;
   post: Post | null;
 }> => {
+  const decodedSlug = decodeURIComponent(slug);
+
+  const normalizedSlug = decodedSlug.replace(/\//g, "-");
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
@@ -77,7 +80,7 @@ export const getPostBySlug = async (
         {
           property: "Slug",
           rich_text: {
-            equals: slug,
+            equals: normalizedSlug,
           },
         },
         {
@@ -89,6 +92,7 @@ export const getPostBySlug = async (
       ],
     },
   });
+
   if (!response.results[0]) {
     return {
       markdown: "",
@@ -167,7 +171,7 @@ export const getPublishedPosts = unstable_cache(
       hasMore: response.has_more,
     };
   },
-  ["posts"],
+  undefined,
   {
     tags: ["posts"],
   },

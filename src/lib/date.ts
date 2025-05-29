@@ -5,3 +5,8 @@ export function formatDate(date: string | Date | undefined) {
   if (!date) return "";
   return format(new Date(date), "PPP", { locale: ko });
 }
+
+export function formatDateWithDot(date: string | Date | undefined) {
+  if (!date) return "";
+  return format(new Date(date), "yyyy.MM", { locale: ko });
+}
