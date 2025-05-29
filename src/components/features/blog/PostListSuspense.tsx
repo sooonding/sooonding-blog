@@ -25,6 +25,8 @@ export default function PostList({ postsPromise }: PostListProps) {
   const tag = searchParams.get("tag");
   const sort = searchParams.get("sort");
 
+  const pageSize = 2;
+
   // react-intersection-observer 라이브러리를 사용하여 무한 스크롤 구현
 
   const fetchPosts = async ({
@@ -48,7 +50,7 @@ export default function PostList({ postsPromise }: PostListProps) {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ["posts", tag, sort],
+      queryKey: ["posts", tag, sort, pageSize],
       queryFn: fetchPosts, // 실제 데이터를 불러오는 비동기 함수
       initialPageParam: undefined, // 첫 페이지는 특별한 파라미터 없이 시작
       getNextPageParam: (lastPage) => {

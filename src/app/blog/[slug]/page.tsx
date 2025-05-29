@@ -3,7 +3,7 @@ import { Separator } from "@/common/components/ui/separator";
 import { Badge } from "@/common/components/ui/badge";
 import { CalendarDays, User } from "lucide-react";
 
-import { getPostBySlug } from "@/lib/notion";
+import { getPostBySlug, getPublishedPosts } from "@/lib/notion";
 import { formatDate } from "@/lib/date";
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
@@ -28,6 +28,34 @@ interface TocEntry {
 interface BlogPostProps {
   params: Promise<{ slug: string }>;
 }
+
+export async function generateMetadata({ params }: BlogPostProps) {
+  const { slug } = await params;
+  const { post } = await getPostBySlug(slug);
+
+  if (!post) {
+    return {
+      title: "포스트를 찾을 수 없습니다.",
+      description: "블로그 포스트를 찾을 수 없습니다.",
+    };
+  }
+  return {
+    title: post.title,
+    description: post.description || `${post.title} - sooonding blog`,
+  };
+}
+
+// 정적으로 생성
+export const generateStaticParams = async () => {
+  const { posts } = await getPublishedPosts();
+  return posts.map((post) => {
+    return {
+      slug: post.slug,
+    };
+  });
+};
+// revalidate 50초 마다 새로고침(ISR)
+export const revalidate = 50;
 
 // nDept
 function TableOfContentsLink({ item }: { item: TocEntry }) {
