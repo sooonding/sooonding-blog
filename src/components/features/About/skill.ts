@@ -8,6 +8,39 @@ export interface ISkill {
   job_description?: Array<string | { title: string; subItems: string[] }>;
 }
 
+export const divide_skills = [
+  {
+    id: 1,
+    job_title: "Frontend",
+    job_skills: [
+      "Next.js13 기반의 서비스 설계 및 운영 경험이 있으며, 최신 버전인 Next.js15(App Router,Server Components 및 Server Actions) 활용 경험도 보유하고 있습니다.",
+      "React 기반의 서비스 아키텍처 설계 및 운영 경험이 있으며 Redux-Saga 기반 비동기 처리 로직 구성 및 API 연동 작업 수행 경험이 있습니다.",
+      "반응형 웹, 크로스 브라우징 등 다양한 웹 환경에서도 동일한 UI 구현 경험이 있습니다.",
+    ],
+  },
+  {
+    id: 2,
+    job_title: "PM",
+    job_skills: [
+      "애자일 개발 프로세스 & 팀관리",
+      "프로젝트 요구사항 분석",
+      "서비스 기획",
+      "UX/UI 기획",
+      "와이어프레임&유저 플로우",
+      "개발 지식",
+    ],
+  },
+  {
+    id: 3,
+    job_title: "Communication & Writing",
+    job_skills: [
+      "개발 경력으로 기술적 커뮤니케이션이 가능하여, 개발자와 비개발자 간의 가교 역할을 수행할 수 있습니다.",
+      "기술 콘텐츠 및 교육 자료 문서화 경험이 있으며, 개발자 더욱 효율적으로 업무를 수행할 수 있도록 문서화 및 프로세스 정리 능력을 갖추고 있습니다.",
+      "Slack, Notion, ClickUp 등 협업 도구를 익숙하게 활용하며, 효과적인 커뮤니케이션과 업무 관리를 지원합니다.",
+    ],
+  },
+];
+
 export const work_experience: ISkill[] = [
   {
     id: 1,
