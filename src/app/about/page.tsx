@@ -2,7 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { Github, Linkedin, Mail } from "lucide-react";
 import AboutCard from "./_components/AboutCard";
-import { ISkill, work_experience } from "@/components/features/About/skill";
+import {
+  ISkill,
+  work_experience,
+  divide_skills,
+} from "@/components/features/About/skill";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/common/components/ui/accordion";
 
 export default function About() {
   return (
@@ -45,7 +55,7 @@ export default function About() {
       </section>
 
       {/* About Me 섹션 */}
-      <section className="space-y-4">
+      <section className="space-y-3">
         <h2 className="text-2xl font-bold">Hola!</h2>
         <p className="text-muted-foreground leading-relaxed">
           {/* 기존 자기소개 내용 유지 */}
@@ -74,23 +84,40 @@ export default function About() {
         </p>
       </section>
 
+      {/* Experience 섹션 */}
+      <section className="space-y-3">
+        <h2 className="text-2xl font-bold">Skills</h2>
+        <div>
+          {divide_skills.map((skillGroup) => (
+            <Accordion key={skillGroup.id} type="single" collapsible>
+              <AccordionItem value={`item-${skillGroup.id}`}>
+                <AccordionTrigger className="text-md text-primary font-bold">
+                  {skillGroup.job_title}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="list-disc space-y-2 pl-4">
+                    {skillGroup.job_skills.map((skill) => (
+                      <li
+                        key={skill}
+                        className="text-muted-foreground text-md font-normal"
+                      >
+                        {skill}
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          ))}
+        </div>
+      </section>
+
       {/* Work Experience 섹션 */}
-      <section className="space-y-6">
+      <section className="space-y-3">
         <h2 className="text-2xl font-bold">Work</h2>
         {work_experience.map((work: ISkill) => (
           <AboutCard key={work.id} {...work} />
         ))}
-      </section>
-
-      {/* Experience 섹션 */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-bold">Experience</h2>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">활동명</h3>
-            <p className="text-gray-300">활동 설명</p>
-          </div>
-        </div>
       </section>
     </div>
   );
