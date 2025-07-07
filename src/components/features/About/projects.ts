@@ -34,6 +34,7 @@ export const experiences: CompanyExperience[] = [
           "Antd",
           "React-hook-form",
           "Emotion",
+          "antd",
         ],
         achievements: [
           {
@@ -46,7 +47,8 @@ export const experiences: CompanyExperience[] = [
           {
             title: "프로젝트 초기 셋업 및 구조 설계",
             items: [
-              "아토믹 디자인 시스템을 도입하여 atoms, molecules, templates, pages 단위로 컴포넌트를 체계적으로 구조화하고, 이를 통해 재사용성과 유지보수성을 크게 향상시킴",
+              "아토믹 디자인 시스템을 도입하여 atoms, molecules, templates, pages 단위로 컴포넌트를 체계적으로 구조화하여 코드 재사용성 30% 향상",
+              "공통 UI 컴포넌트 구축으로 일관된 디자인 시스템 확립",
             ],
           },
           {
@@ -60,6 +62,7 @@ export const experiences: CompanyExperience[] = [
             title: "운영 효율 및 리소스 최적화 성과 도출",
             items: [
               "분산되어 있던 3개의 도메인을 단일 통합 어드민으로 변경하여 크로스 체크 과정 제거 및 업무 프로세스 간소화 달성",
+              "커스텀 훅 개발로 비즈니스 로직 중복 제거 및 코드 재사용성 향상",
             ],
           },
         ],
