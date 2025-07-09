@@ -96,7 +96,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
   return (
     <article className="container py-4 md:py-8 lg:py-12">
-      <div className="mx-auto grid grid-cols-1 gap-4 md:gap-8 lg:grid-cols-[minmax(auto,720px)_250px] xl:max-w-[1000px]">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[130px_minmax(0,65ch)_250px] md:gap-8">
         <aside className="hidden md:block"></aside>
         <section className="order-2 md:order-none">
           {/* 블로그 헤더 */}
