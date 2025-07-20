@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/common/components/ui/card";
 import Image from "next/image";
-import { Github, Instagram, Mail } from "lucide-react";
+import { Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 
 const socialLinks = [
@@ -9,8 +9,8 @@ const socialLinks = [
     href: "https://github.com/sooonding",
   },
   {
-    icon: Instagram,
-    href: "https://www.instagram.com/sooonding",
+    icon: Linkedin,
+    href: "https://www.linkedin.com/in/sooonding",
   },
   {
     icon: Mail,

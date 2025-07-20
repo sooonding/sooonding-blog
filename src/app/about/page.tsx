@@ -44,7 +44,7 @@ export default function About() {
               GitHub
             </Link>
             <Link
-              href="https://linkedin.com/in/yourlinkedin"
+              href="https://www.linkedin.com/in/sooonding"
               className="hover:text-primary flex items-center gap-2 text-sm text-gray-400"
             >
               <Linkedin size={16} />
