@@ -55,7 +55,7 @@ export const generateStaticParams = async () => {
   });
 };
 // revalidate 50초 마다 새로고침(ISR)
-export const revalidate = 50;
+export const revalidate = 30;
 
 // nDept
 function TableOfContentsLink({ item }: { item: TocEntry }) {
