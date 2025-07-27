@@ -11,9 +11,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     () =>
       new QueryClient({
         defaultOptions: {
-          // 데이터가 신선하다고 간주되는 시간, 이 시간 동안은 새로운 데이터를 페칭하지 않고 캐시된 데이터를 재사용
+          // 새로고침 시 최신 데이터를 가져오도록 캐시 시간 단축
           queries: {
-            staleTime: 30 * 1000, // 30초
+            staleTime: 0, // 항상 최신 데이터 확인
+            gcTime: 5 * 60 * 1000, // 5분간 가비지 컬렉션 방지
           },
         },
       }),
