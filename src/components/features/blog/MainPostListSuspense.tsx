@@ -53,13 +53,19 @@ export default function MainPostList({ postsPromise }: PostListProps) {
         //다음 페이지를 불러올 때 사용할 파라미터를 반환하는 함수입니다.
         return lastPage.nextCursor ?? undefined;
       },
-      initialData: {
-        pages: [initialData], //첫 렌더링 시 사용할 초기 데이터입니다.
-        pageParams: [undefined], //첫 렌더링 시 사용할 파라미터입니다.
-      },
+      // 태그나 정렬이 없을 때만 initialData 사용 (선택사항)
+      ...(!tag && !sort
+        ? {
+            initialData: {
+              pages: [initialData],
+              pageParams: [undefined],
+            },
+          }
+        : {}),
       //캐시설정 추가
       gcTime: 0,
       staleTime: 0,
+      refetchOnMount: true,
     });
 
   // useInView 훅은 뷰포트 감지
