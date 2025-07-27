@@ -6,7 +6,6 @@ import type {
 } from "@notionhq/client/build/src/api-endpoints";
 
 import { NotionToMarkdown } from "notion-to-md";
-import { unstable_cache } from "next/cache";
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
@@ -122,13 +121,12 @@ export interface getPublishedPostsResponse {
   hasMore: boolean;
 }
 
-export const getPublishedPosts = unstable_cache(
-  async ({
-    tag = "전체",
-    sort = "latest",
-    pageSize = 6,
-    startCursor,
-  }: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
+export const getPublishedPosts = async ({
+  tag = "전체",
+  sort = "latest",
+  pageSize = 6,
+  startCursor,
+}: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
     const response = await notion.databases.query({
       database_id: process.env.NOTION_DATABASE_ID!,
       filter: {
@@ -165,17 +163,12 @@ export const getPublishedPosts = unstable_cache(
       .filter((page): page is PageObjectResponse => "properties" in page)
       .map(getPostMetadata);
 
-    return {
-      posts,
-      nextCursor: response.next_cursor,
-      hasMore: response.has_more,
-    };
-  },
-  undefined,
-  {
-    tags: ["posts"],
-  },
-);
+  return {
+    posts,
+    nextCursor: response.next_cursor,
+    hasMore: response.has_more,
+  };
+};
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
   const { posts } = await getPublishedPosts({ pageSize: 100 });
