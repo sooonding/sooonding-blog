@@ -21,14 +21,7 @@ export const divide_skills = [
   {
     id: 2,
     job_title: "PM",
-    job_skills: [
-      "애자일 개발 프로세스 & 팀관리",
-      "프로젝트 요구사항 분석",
-      "서비스 기획",
-      "UX/UI 기획",
-      "와이어프레임&유저 플로우",
-      "개발 지식",
-    ],
+    job_skills: [],
   },
   {
     id: 3,

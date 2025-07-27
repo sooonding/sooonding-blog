@@ -57,6 +57,9 @@ export default function MainPostList({ postsPromise }: PostListProps) {
         pages: [initialData], //첫 렌더링 시 사용할 초기 데이터입니다.
         pageParams: [undefined], //첫 렌더링 시 사용할 파라미터입니다.
       },
+      //캐시설정 추가
+      gcTime: 0,
+      staleTime: 0,
     });
 
   // useInView 훅은 뷰포트 감지
