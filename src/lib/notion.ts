@@ -255,3 +255,128 @@ export const createPost = async ({ title, tag, content }: CreatePostParams) => {
 
   return response;
 };
+
+export interface SearchPostsParams {
+  query: string;
+  pageSize?: number;
+  startCursor?: string;
+}
+
+export interface SearchPostsResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+// 포스트 내용 캐시 (메모리 캐시)
+const postContentCache = new Map<string, string>();
+
+const getPostContent = async (postId: string): Promise<string> => {
+  if (postContentCache.has(postId)) {
+    return postContentCache.get(postId)!;
+  }
+
+  try {
+    const mdblocks = await n2m.pageToMarkdown(postId);
+    const { parent } = n2m.toMarkdownString(mdblocks);
+    
+    // 캐시에 저장 (최대 1시간 후 삭제)
+    postContentCache.set(postId, parent);
+    setTimeout(() => {
+      postContentCache.delete(postId);
+    }, 60 * 60 * 1000); // 1시간
+    
+    return parent;
+  } catch (error) {
+    console.error(`Error fetching content for post ${postId}:`, error);
+    return "";
+  }
+};
+
+export const searchPosts = async ({
+  query,
+  pageSize = 10,
+  startCursor,
+}: SearchPostsParams): Promise<SearchPostsResponse> => {
+  if (!query.trim()) {
+    return {
+      posts: [],
+      nextCursor: null,
+      hasMore: false,
+    };
+  }
+
+  // 모든 게시된 포스트를 가져옵니다
+  const allPostsResponse = await notion.databases.query({
+    database_id: process.env.NOTION_DATABASE_ID!,
+    filter: {
+      property: "Status",
+      select: {
+        equals: "Published",
+      },
+    },
+    sorts: [
+      {
+        property: "Date",
+        direction: "descending",
+      },
+    ],
+    page_size: 50, // 검색 성능을 위해 50개로 제한
+  });
+
+  const allPosts = allPostsResponse.results
+    .filter((page): page is PageObjectResponse => "properties" in page)
+    .map(getPostMetadata);
+
+  const searchResults: Post[] = [];
+  const searchQuery = query.toLowerCase();
+  
+  // 제목과 설명에서 먼저 검색 (빠른 검색)
+  const titleDescriptionMatches = allPosts.filter(post => {
+    const titleMatch = post.title.toLowerCase().includes(searchQuery);
+    const descriptionMatch = post.description?.toLowerCase().includes(searchQuery);
+    return titleMatch || descriptionMatch;
+  });
+  
+  searchResults.push(...titleDescriptionMatches);
+
+  // 내용 검색이 필요한 포스트들 (제목/설명에서 매칭되지 않은 것들)
+  const remainingPosts = allPosts.filter(post => 
+    !titleDescriptionMatches.some(match => match.id === post.id)
+  );
+
+  // 내용 검색 (최대 20개까지만, 성능 고려)
+  const contentSearchPromises = remainingPosts.slice(0, 20).map(async (post) => {
+    try {
+      const content = await getPostContent(post.id);
+      if (content.toLowerCase().includes(searchQuery)) {
+        return post;
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error searching content for post ${post.id}:`, error);
+      return null;
+    }
+  });
+
+  const contentMatches = await Promise.all(contentSearchPromises);
+  const validContentMatches = contentMatches.filter(post => post !== null) as Post[];
+  
+  searchResults.push(...validContentMatches);
+
+  // 중복 제거 및 날짜순 정렬
+  const uniqueResults = searchResults.filter((post, index, array) => 
+    array.findIndex(p => p.id === post.id) === index
+  );
+
+  // 페이지네이션 적용
+  const startIndex = startCursor ? parseInt(startCursor) : 0;
+  const endIndex = startIndex + pageSize;
+  const paginatedResults = uniqueResults.slice(startIndex, endIndex);
+
+  return {
+    posts: paginatedResults,
+    nextCursor: endIndex < uniqueResults.length ? endIndex.toString() : null,
+    hasMore: endIndex < uniqueResults.length,
+  };
+};
