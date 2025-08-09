@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ModeToggle } from "../components/theme/DarkModeToggle";
 import NavItem from "./components/NavItem";
+import SearchButton from "@/components/features/search/SearchButton";
 
 export default function Header() {
   return (
@@ -11,7 +12,13 @@ export default function Header() {
           <span className="font-bold">간헐적으로 기록합니다.</span>
         </Link>
         <NavItem />
-        <div className="ml-2.5 flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-7">
+          <div className="hidden w-32 sm:block">
+            <SearchButton />
+          </div>
+          <div className="sm:hidden">
+            <SearchButton />
+          </div>
           <ModeToggle />
           {/* asChild는 말 그대로 자식요소를 쓰겠다는 말
           실제 브라우저에서 보면 button 엘리먼트는 없어진다. */}

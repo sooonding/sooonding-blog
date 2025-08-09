@@ -68,7 +68,7 @@ export default function ProfileSection() {
           </div>
 
           <p className="bg-primary/10 rounded p-2 text-center text-sm">
-            꿈나무 ✨
+            전성진
           </p>
         </div>
       </CardContent>
