@@ -23,6 +23,9 @@ export default function TagSection({ tags, selectedTag }: TagSectionProps) {
     <Card>
       <CardHeader>
         <CardTitle>태그 목록</CardTitle>
+        <span className="text-muted-foreground text-sm">
+          (상위 10개의 목록)
+        </span>
       </CardHeader>
       <CardContent>
         <div className="flex max-h-[160px] flex-col gap-3 overflow-y-auto md:max-h-full">

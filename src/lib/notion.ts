@@ -127,41 +127,41 @@ export const getPublishedPosts = async ({
   pageSize = 6,
   startCursor,
 }: getPublishedPostParams = {}): Promise<getPublishedPostsResponse> => {
-    const response = await notion.databases.query({
-      database_id: process.env.NOTION_DATABASE_ID!,
-      filter: {
-        and: [
-          {
-            property: "Status",
-            select: {
-              equals: "Published",
-            },
-          },
-          ...(tag && tag !== "전체"
-            ? [
-                {
-                  property: "Tags",
-                  multi_select: {
-                    contains: tag,
-                  },
-                },
-              ]
-            : []),
-        ],
-      },
-      sorts: [
+  const response = await notion.databases.query({
+    database_id: process.env.NOTION_DATABASE_ID!,
+    filter: {
+      and: [
         {
-          property: "Date",
-          direction: sort === "latest" ? "descending" : "ascending",
+          property: "Status",
+          select: {
+            equals: "Published",
+          },
         },
+        ...(tag && tag !== "전체"
+          ? [
+              {
+                property: "Tags",
+                multi_select: {
+                  contains: tag,
+                },
+              },
+            ]
+          : []),
       ],
-      page_size: pageSize,
-      start_cursor: startCursor,
-    });
+    },
+    sorts: [
+      {
+        property: "Date",
+        direction: sort === "latest" ? "descending" : "ascending",
+      },
+    ],
+    page_size: pageSize,
+    start_cursor: startCursor,
+  });
 
-    const posts = response.results
-      .filter((page): page is PageObjectResponse => "properties" in page)
-      .map(getPostMetadata);
+  const posts = response.results
+    .filter((page): page is PageObjectResponse => "properties" in page)
+    .map(getPostMetadata);
 
   return {
     posts,
@@ -193,16 +193,15 @@ export const getTags = async (): Promise<TagFilterItem[]> => {
     }),
   );
 
-  // "전체" 태그 추가
-  tags.unshift({
+  // 카운트 기준 내림차순으로 정렬하고 상위 5개만 선택
+  const sortedTags = tags.sort((a, b) => b.count - a.count).slice(0, 10);
+
+  // "전체" 태그 추가 (항상 첫 번째 위치)
+  const allTag = {
     id: "all",
     name: "전체",
     count: posts.length,
-  });
-
-  // 태그 이름 기준으로 정렬 ("전체" 태그는 항상 첫 번째에 위치하도록 제외)
-  const [allTag, ...restTags] = tags;
-  const sortedTags = restTags.sort((a, b) => a.name.localeCompare(b.name));
+  };
 
   return [allTag, ...sortedTags];
 };
@@ -279,13 +278,16 @@ const getPostContent = async (postId: string): Promise<string> => {
   try {
     const mdblocks = await n2m.pageToMarkdown(postId);
     const { parent } = n2m.toMarkdownString(mdblocks);
-    
+
     // 캐시에 저장 (최대 1시간 후 삭제)
     postContentCache.set(postId, parent);
-    setTimeout(() => {
-      postContentCache.delete(postId);
-    }, 60 * 60 * 1000); // 1시간
-    
+    setTimeout(
+      () => {
+        postContentCache.delete(postId);
+      },
+      60 * 60 * 1000,
+    ); // 1시간
+
     return parent;
   } catch (error) {
     console.error(`Error fetching content for post ${postId}:`, error);
@@ -330,43 +332,49 @@ export const searchPosts = async ({
 
   const searchResults: Post[] = [];
   const searchQuery = query.toLowerCase();
-  
+
   // 제목과 설명에서 먼저 검색 (빠른 검색)
-  const titleDescriptionMatches = allPosts.filter(post => {
+  const titleDescriptionMatches = allPosts.filter((post) => {
     const titleMatch = post.title.toLowerCase().includes(searchQuery);
-    const descriptionMatch = post.description?.toLowerCase().includes(searchQuery);
+    const descriptionMatch = post.description
+      ?.toLowerCase()
+      .includes(searchQuery);
     return titleMatch || descriptionMatch;
   });
-  
+
   searchResults.push(...titleDescriptionMatches);
 
   // 내용 검색이 필요한 포스트들 (제목/설명에서 매칭되지 않은 것들)
-  const remainingPosts = allPosts.filter(post => 
-    !titleDescriptionMatches.some(match => match.id === post.id)
+  const remainingPosts = allPosts.filter(
+    (post) => !titleDescriptionMatches.some((match) => match.id === post.id),
   );
 
   // 내용 검색 (최대 20개까지만, 성능 고려)
-  const contentSearchPromises = remainingPosts.slice(0, 20).map(async (post) => {
-    try {
-      const content = await getPostContent(post.id);
-      if (content.toLowerCase().includes(searchQuery)) {
-        return post;
+  const contentSearchPromises = remainingPosts
+    .slice(0, 20)
+    .map(async (post) => {
+      try {
+        const content = await getPostContent(post.id);
+        if (content.toLowerCase().includes(searchQuery)) {
+          return post;
+        }
+        return null;
+      } catch (error) {
+        console.error(`Error searching content for post ${post.id}:`, error);
+        return null;
       }
-      return null;
-    } catch (error) {
-      console.error(`Error searching content for post ${post.id}:`, error);
-      return null;
-    }
-  });
+    });
 
   const contentMatches = await Promise.all(contentSearchPromises);
-  const validContentMatches = contentMatches.filter(post => post !== null) as Post[];
-  
+  const validContentMatches = contentMatches.filter(
+    (post) => post !== null,
+  ) as Post[];
+
   searchResults.push(...validContentMatches);
 
   // 중복 제거 및 날짜순 정렬
-  const uniqueResults = searchResults.filter((post, index, array) => 
-    array.findIndex(p => p.id === post.id) === index
+  const uniqueResults = searchResults.filter(
+    (post, index, array) => array.findIndex((p) => p.id === post.id) === index,
   );
 
   // 페이지네이션 적용
