@@ -1,0 +1,103 @@
+# Notion → Markdown 자동 동기화 워크플로우
+#
+# 이 GitHub Actions 워크플로우는 Notion 데이터베이스의 블로그 글을
+# markdown 파일로 자동 변환하여 저장하고 커밋합니다.
+#
+# 트리거 조건:
+# 1. 매일 자정(KST 기준 오전 9시 = UTC 0시)에 자동 실행
+# 2. GitHub UI에서 수동 실행 가능 (Actions 탭 > Run workflow)
+# 3. main 브랜치에 push 시 실행 (선택적)
+#
+# 필요한 GitHub Secrets:
+# - NOTION_TOKEN: Notion 통합 토큰
+# - NOTION_DATABASE_ID: Notion 데이터베이스 ID
+
+name: Sync Notion to Markdown
+
+# 워크플로우 실행 조건
+on:
+  # 1. 스케줄: 매일 UTC 0시 (KST 오전 9시)에 자동 실행
+  schedule:
+    - cron: '0 0 * * *'
+
+  # 2. 수동 실행: GitHub Actions UI에서 'Run workflow' 버튼으로 실행 가능
+  workflow_dispatch:
+
+  # 3. (선택) main 브랜치에 push 시 실행 - 필요시 주석 해제
+  # push:
+  #   branches:
+  #     - main
+
+# 작업 정의
+jobs:
+  sync:
+    # 작업 이름
+    name: Sync Notion to Markdown
+
+    # 실행 환경: 최신 Ubuntu
+    runs-on: ubuntu-latest
+
+    # 작업 권한 설정 (중요!)
+    permissions:
+      contents: write  # 파일 생성 및 커밋/푸시 권한
+
+    steps:
+      # Step 1: 저장소 체크아웃
+      # actions/checkout@v4는 현재 저장소를 워크플로우 환경으로 가져옵니다
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0은 전체 git 히스토리를 가져옵니다 (필요시)
+          fetch-depth: 1
+
+      # Step 2: Node.js 환경 설정
+      # actions/setup-node@v4는 지정된 Node.js 버전을 설치합니다
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  # Node.js 20 LTS 버전 사용
+          cache: 'npm'         # npm 캐시를 활용해 설치 속도 향상
+
+      # Step 3: 의존성 설치
+      # package.json에 정의된 모든 패키지를 설치합니다
+      - name: Install dependencies
+        run: npm ci  # npm ci는 package-lock.json을 기반으로 정확한 버전 설치
+
+      # Step 4: Notion 동기화 스크립트 실행
+      # scripts/sync-notion.ts를 실행하여 Notion → Markdown 변환
+      - name: Run Notion sync script
+        env:
+          # GitHub Secrets에서 환경 변수 주입
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: npm run sync:notion
+
+      # Step 5: Git 설정
+      # 커밋 작성자 정보를 설정합니다
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      # Step 6: 변경사항 커밋 및 푸시
+      # 새로운 파일이나 수정된 파일이 있으면 커밋하고 푸시합니다
+      - name: Commit and push changes
+        run: |
+          # content/posts/ 디렉토리의 모든 변경사항을 스테이징
+          git add content/posts/
+
+          # 변경사항이 있는지 확인
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            # 변경사항이 있으면 커밋
+            git commit -m "sync: Update blog posts from Notion
+
+          - Synced at $(date +'%Y-%m-%d %H:%M:%S UTC')
+          - Automated by GitHub Actions"
+
+            # 원격 저장소로 푸시
+            git push
+
+            echo "Successfully synced and pushed changes"
+          fi
