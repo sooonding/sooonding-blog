@@ -76,8 +76,8 @@ jobs:
       # 커밋 작성자 정보를 설정합니다
       - name: Configure Git
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.email "sooonding@gmail.com"
+          git config --local user.name "sooonding"
 
       # Step 6: 변경사항 커밋 및 푸시
       # 새로운 파일이나 수정된 파일이 있으면 커밋하고 푸시합니다
