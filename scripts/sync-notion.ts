@@ -173,6 +173,40 @@ async function savePostAsMarkdown(post: Post): Promise<void> {
 }
 
 /**
+ * Notion에 없는 파일 삭제
+ */
+async function cleanupOldFiles(currentPosts: Post[]): Promise<number> {
+  const currentSlugs = new Set(currentPosts.map((post) => `${post.slug}.md`));
+
+  // content/posts 디렉토리의 모든 파일 읽기
+  const existingFiles = await fs.readdir(CONTENT_DIR);
+
+  let deletedCount = 0;
+
+  for (const file of existingFiles) {
+    // .gitkeep은 건드리지 않음
+    if (file === '.gitkeep') {
+      continue;
+    }
+
+    // .md 파일만 처리
+    if (!file.endsWith('.md')) {
+      continue;
+    }
+
+    // Notion에 없는 파일이면 삭제
+    if (!currentSlugs.has(file)) {
+      const filePath = path.join(CONTENT_DIR, file);
+      await fs.unlink(filePath);
+      console.log(`  🗑️  ${file} (삭제됨)`);
+      deletedCount++;
+    }
+  }
+
+  return deletedCount;
+}
+
+/**
  * 메인 동기화 함수
  */
 async function syncNotionToMarkdown() {
@@ -197,7 +231,15 @@ async function syncNotionToMarkdown() {
       await savePostAsMarkdown(post);
     }
 
-    console.log(`\n✨ 동기화 완료! ${posts.length}개의 파일이 저장되었습니다.`);
+    // Notion에 없는 파일 삭제
+    console.log("\n🧹 불필요한 파일 정리 중...\n");
+    const deletedCount = await cleanupOldFiles(posts);
+
+    if (deletedCount > 0) {
+      console.log(`\n✨ 동기화 완료! ${posts.length}개 저장, ${deletedCount}개 삭제되었습니다.`);
+    } else {
+      console.log(`\n✨ 동기화 완료! ${posts.length}개의 파일이 저장되었습니다.`);
+    }
   } catch (error) {
     console.error("\n❌ 동기화 실패:", error);
     process.exit(1);
