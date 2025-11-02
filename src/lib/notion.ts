@@ -270,6 +270,11 @@ export interface SearchPostsResponse {
 // 포스트 내용 캐시 (메모리 캐시)
 const postContentCache = new Map<string, string>();
 
+// 포스트 목록 캐시 (메모리 캐시)
+let publishedPostsCache: Post[] | null = null;
+let publishedPostsCacheTime: number | null = null;
+const CACHE_TTL = 5 * 60 * 1000; // 5분
+
 const getPostContent = async (postId: string): Promise<string> => {
   if (postContentCache.has(postId)) {
     return postContentCache.get(postId)!;
@@ -308,38 +313,67 @@ export const searchPosts = async ({
     };
   }
 
-  // 모든 게시된 포스트를 가져옵니다
-  const allPostsResponse = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
-    filter: {
-      property: "Status",
-      select: {
-        equals: "Published",
-      },
-    },
-    sorts: [
-      {
-        property: "Date",
-        direction: "descending",
-      },
-    ],
-    page_size: 50, // 검색 성능을 위해 50개로 제한
-  });
+  // 캐시가 유효한지 확인
+  const now = Date.now();
+  const isCacheValid =
+    publishedPostsCache &&
+    publishedPostsCacheTime &&
+    now - publishedPostsCacheTime < CACHE_TTL;
 
-  const allPosts = allPostsResponse.results
-    .filter((page): page is PageObjectResponse => "properties" in page)
-    .map(getPostMetadata);
+  let allPosts: Post[];
+
+  if (isCacheValid) {
+    // 캐시에서 포스트 목록 가져오기
+    allPosts = publishedPostsCache!;
+  } else {
+    // 모든 게시된 포스트를 가져옵니다
+    const allPostsResponse = await notion.databases.query({
+      database_id: process.env.NOTION_DATABASE_ID!,
+      filter: {
+        property: "Status",
+        select: {
+          equals: "Published",
+        },
+      },
+      sorts: [
+        {
+          property: "Date",
+          direction: "descending",
+        },
+      ],
+      page_size: 100, // 검색 성능을 위해 100개로 제한
+    });
+
+    allPosts = allPostsResponse.results
+      .filter((page): page is PageObjectResponse => "properties" in page)
+      .map(getPostMetadata);
+
+    // 캐시에 저장
+    publishedPostsCache = allPosts;
+    publishedPostsCacheTime = now;
+  }
 
   const searchResults: Post[] = [];
   const searchQuery = query.toLowerCase();
+  // 띄어쓰기를 제거한 검색어 (띄어쓰기 무시 검색용)
+  const searchQueryNoSpaces = searchQuery.replace(/\s+/g, "");
 
   // 제목과 설명에서 먼저 검색 (빠른 검색)
   const titleDescriptionMatches = allPosts.filter((post) => {
-    const titleMatch = post.title.toLowerCase().includes(searchQuery);
-    const descriptionMatch = post.description
-      ?.toLowerCase()
-      .includes(searchQuery);
-    return titleMatch || descriptionMatch;
+    const title = post.title.toLowerCase();
+    const description = post.description?.toLowerCase() || "";
+
+    // 원본 검색어로 매칭
+    const titleMatch = title.includes(searchQuery);
+    const descriptionMatch = description.includes(searchQuery);
+
+    // 띄어쓰기 제거한 버전으로 매칭
+    const titleNoSpaces = title.replace(/\s+/g, "");
+    const descriptionNoSpaces = description.replace(/\s+/g, "");
+    const titleMatchNoSpaces = titleNoSpaces.includes(searchQueryNoSpaces);
+    const descriptionMatchNoSpaces = descriptionNoSpaces.includes(searchQueryNoSpaces);
+
+    return titleMatch || descriptionMatch || titleMatchNoSpaces || descriptionMatchNoSpaces;
   });
 
   searchResults.push(...titleDescriptionMatches);
@@ -349,15 +383,25 @@ export const searchPosts = async ({
     (post) => !titleDescriptionMatches.some((match) => match.id === post.id),
   );
 
-  // 내용 검색 (최대 20개까지만, 성능 고려)
+  // 내용 검색 (최대 10개까지만, 성능 고려)
   const contentSearchPromises = remainingPosts
-    .slice(0, 20)
+    .slice(0, 10)
     .map(async (post) => {
       try {
         const content = await getPostContent(post.id);
-        if (content.toLowerCase().includes(searchQuery)) {
+        const contentLower = content.toLowerCase();
+
+        // 원본 검색어로 매칭
+        if (contentLower.includes(searchQuery)) {
           return post;
         }
+
+        // 띄어쓰기 제거한 버전으로 매칭
+        const contentNoSpaces = contentLower.replace(/\s+/g, "");
+        if (contentNoSpaces.includes(searchQueryNoSpaces)) {
+          return post;
+        }
+
         return null;
       } catch (error) {
         console.error(`Error searching content for post ${post.id}:`, error);

@@ -64,7 +64,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         setResults([]);
         setHasSearched(false);
       }
-    }, 300);
+    }, 500); // debounce 시간을 500ms로 증가 (성능 개선)
 
     return () => clearTimeout(timeoutId);
   }, [query]);
