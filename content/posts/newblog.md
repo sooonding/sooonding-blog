@@ -5,7 +5,7 @@ description: "새로 개편한 이유"
 tags: ["Etc"]
 author: "seongjin jeon"
 date: "2025-05-28"
-modifiedDate: "2025-07-20T13:15:00.000Z"
+modifiedDate: "2025-11-02T07:11:00.000Z"
 notionId: "2029b006-ca58-80e3-91e1-d2d384e0eca7"
 ---
 한동안 블로그를 거의 쓰지 않았다. Notion이나 Obsidian으로 기록하는 게 더 편했고, 하나의 도구에 몰입하는 게 더 효율적이라고 생각했기 때문이다.

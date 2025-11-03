@@ -4,7 +4,7 @@ slug: "robots"
 tags: ["DA"]
 author: "seongjin jeon"
 date: "2025-09-14"
-modifiedDate: "2025-09-15T00:37:00.000Z"
+modifiedDate: "2025-11-02T07:23:00.000Z"
 notionId: "26f9b006-ca58-8035-b70c-cfa3cf57b9fe"
 ---
 

@@ -4,7 +4,7 @@ slug: "serveractions"
 tags: ["Next.js"]
 author: "seongjin jeon"
 date: "2025-05-21"
-modifiedDate: "2025-05-29T05:33:00.000Z"
+modifiedDate: "2025-11-02T07:11:00.000Z"
 notionId: "1f99b006-ca58-80ff-af7a-f2af6f36c4f0"
 ---
 ## 서버 액션 활용

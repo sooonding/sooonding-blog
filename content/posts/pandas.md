@@ -5,7 +5,7 @@ description: "Pandas에 대해 알아보자"
 tags: ["DA"]
 author: "seongjin jeon"
 date: "2025-07-18"
-modifiedDate: "2025-07-18T01:13:00.000Z"
+modifiedDate: "2025-11-02T07:18:00.000Z"
 notionId: "2349b006-ca58-80d8-883e-cbbc969b6220"
 ---
 ## 🔍 Pandas란?

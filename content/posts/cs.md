@@ -5,7 +5,7 @@ description: "클라이언트-서버 컴포넌트 상호작용"
 tags: ["Next.js"]
 author: "seongjin jeon"
 date: "2025-06-13"
-modifiedDate: "2025-06-12T15:38:00.000Z"
+modifiedDate: "2025-11-02T07:11:00.000Z"
 notionId: "2109b006-ca58-8007-af2c-c5254d1011cd"
 ---
 Next.js에서 클라이언트 컴포넌트와 서버 컴포넌트를 함께 사용할 때, 컴포넌트의 특성을 유지하면서 효율적으로 조합하는 방법에 대해 알아보자

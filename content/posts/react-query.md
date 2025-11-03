@@ -4,7 +4,7 @@ slug: "react-query"
 description: "설명입니다!!!!!"
 author: "seongjin jeon"
 date: "2025-05-19"
-modifiedDate: "2025-07-20T13:17:00.000Z"
+modifiedDate: "2025-11-02T07:12:00.000Z"
 notionId: "1f89b006-ca58-80e2-9eab-fc2cb2998173"
 ---
 ## Next.js에서 React Query와 IntersectionObserver를 활용한 무한 스크롤 구현기

@@ -5,7 +5,7 @@ description: "코호트와 세그먼트의 차이점"
 tags: ["DA"]
 author: "seongjin jeon"
 date: "2025-09-13"
-modifiedDate: "2025-09-14T23:39:00.000Z"
+modifiedDate: "2025-11-02T07:23:00.000Z"
 notionId: "26e9b006-ca58-809c-8f9c-c9088fae14a3"
 ---
 ## 코호트 & 세그먼트

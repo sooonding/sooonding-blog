@@ -5,7 +5,7 @@ description: "zod를 이용한 유효성 검사"
 tags: ["zod"]
 author: "seongjin jeon"
 date: "2025-07-09"
-modifiedDate: "2025-07-09T07:06:00.000Z"
+modifiedDate: "2025-11-02T07:13:00.000Z"
 notionId: "22b9b006-ca58-80bb-8659-cdd71e6f43dc"
 ---
 ## 01 Introduce to Zod

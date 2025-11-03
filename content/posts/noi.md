@@ -5,7 +5,7 @@ description: "정규화와 논리적 모델링"
 tags: ["db"]
 author: "seongjin jeon"
 date: "2025-08-31"
-modifiedDate: "2025-09-01T01:14:00.000Z"
+modifiedDate: "2025-11-02T07:23:00.000Z"
 notionId: "2609b006-ca58-80dc-9163-cea16e15de22"
 ---
 ## 정규화란?
