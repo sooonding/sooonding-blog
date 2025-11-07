@@ -5,7 +5,7 @@ description: "콜로케이션 & next.js에서의 colocation"
 tags: ["Next.js"]
 author: "seongjin jeon"
 date: "2025-11-05"
-modifiedDate: "2025-11-05T00:13:00.000Z"
+modifiedDate: "2025-11-06T03:20:00.000Z"
 notionId: "2a19b006-ca58-8007-8c8e-f060d39720e7"
 ---
 ## Colocation
@@ -190,4 +190,10 @@ my-project/
         └── settings/
             └── page.tsx          # URL: /settings
 ```
+
+
+### 출처
+
+
+[https://nextjs.org/docs](https://nextjs.org/docs)
 
