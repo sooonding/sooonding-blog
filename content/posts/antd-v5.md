@@ -5,7 +5,7 @@ description: "antd 버전 변경 후 배포 오류"
 tags: ["antd", "Next.js"]
 author: "seongjin jeon"
 date: "2025-11-19"
-modifiedDate: "2025-11-20T05:51:00.000Z"
+modifiedDate: "2026-02-23T05:41:00.000Z"
 notionId: "2a49b006-ca58-80fb-b6f6-c2b178e0435e"
 ---
 ## 문제 상황
